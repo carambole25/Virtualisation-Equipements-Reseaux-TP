@@ -222,7 +222,7 @@ while True:
 	sendp(pk2, iface="enp0s3")
 ```
 
-## 2. DNS spoofing
+## Quêtes annexes : DNS spoofing
 On lance notre arpspoofing en arrière plan
 ```
 root@debian:/home/toto# python3 script_arpspoofing.py > /dev/null &
