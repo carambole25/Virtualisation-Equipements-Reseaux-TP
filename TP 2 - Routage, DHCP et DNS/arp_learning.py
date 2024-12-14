@@ -12,10 +12,10 @@ def make_it_permanent(non_permanent_lines):
     for line in non_permanent_lines:
         ip = line.split()[0]
         mac = line.split()[4]
-        run_cmd(f"ip neigh replace {ip} lladdr {mac} dev wlp4s0 nud perm")
+        run_cmd(f"ip neigh replace {ip} lladdr {mac} dev enp0s3 nud perm")
 
 while True:
     arp_tables = run_cmd('ip n')
     non_permanent_lines = get_non_permanent_lines(arp_tables)
     make_it_permanent(non_permanent_lines)
-    time.sleep()
+    time.sleep(10)
