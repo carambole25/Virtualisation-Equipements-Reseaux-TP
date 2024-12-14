@@ -290,3 +290,41 @@ From 10.2.1.17 (10.2.1.17) icmp_seq=3 Redirect Host (New nexthop: _gateway (10.2
 From 10.2.1.17 (10.2.1.17) icmp_seq=4 Redirect Host (New nexthop: _gateway (10.2.1.254)) 64 bytes from 1hr25s01-in-f14.1e100.net (216.58.213.78): icmp_seq=4 ttl=58 time=30.6 ms
 From 10.2.1.17 (10.2.1.17) icmp_seq=5 Redirect Host (New nexthop: _gateway (10.2.1.254)) 64 bytes from 1hr25s01-in-f78.1e100.net (216.58.213.78): icmp_seq=5 ttl=58 time=31.8 ms
 ```
+
+## Quêtes annexes : Empêcher l'ARP poisoning
+Ce petit script va mettre les placers tout les entrées de la table ARP en statique au fur et a mesure. Il le fait tout les 10 secondes (faudrait pas avoir de chance pour se faire ARP poisoning dans ce délai).
+```python
+import subprocess
+import re
+import time
+
+def run_cmd(cmd):
+    return subprocess.check_output(cmd, shell=True).decode('utf-8')
+
+def get_non_permanent_lines(arp_tables):
+    return [i for i in arp_tables.splitlines() if "PERMANENT" not in i]
+
+def make_it_permanent(non_permanent_lines):
+    for line in non_permanent_lines:
+        ip = line.split()[0]
+        mac = line.split()[4]
+        run_cmd(f"ip neigh replace {ip} lladdr {mac} dev enp0s3 nud perm")
+
+while True:
+    arp_tables = run_cmd('ip n')
+    non_permanent_lines = get_non_permanent_lines(arp_tables)
+    make_it_permanent(non_permanent_lines)
+    time.sleep(10)
+```
+On a qu'a le lancer en arrière plan pour qu'il fasse son travail (pour que ce soit plus propre faudrait en faire un daemon).
+```
+root@localhost toto]# python3 arp_learning.py & [1] 1505
+```
+
+```
+[root@localhost toto]# ip n
+10.2.1.254 dev enp0s3 lladdr 08:00:27:5f:7d:54 PERMANENT
+10.2.1.253 dev enp0s3 lladdr 08:00:27:f1:68:a8 PERMANENT
+```
+
+Après test on voit que l'attaque non fonctionne plus.
