@@ -29,9 +29,11 @@ answer = sr1(IP(dst="dns.tp3.b2", src="10.3.2.10")/UDP(dport=53)/DNS(rd=1,qd=DNS
 
 print(answer[DNS].summary()) # évidement on aura pas de réponse sur la machine attaquante
 ```
-	
+
 [DNS spoof query](dns_flood.pcapng)
 
+### 1. TCP
+🌞 **Mettre en place une attaque TCP RST**
 ```
 [attaquant@localhost toto]# python3 rst.py
 ip src >> 10.3.3.1
