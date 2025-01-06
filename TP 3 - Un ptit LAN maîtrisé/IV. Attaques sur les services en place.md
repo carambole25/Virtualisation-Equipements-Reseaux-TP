@@ -32,7 +32,7 @@ print(answer[DNS].summary()) # évidement on aura pas de réponse sur la machine
 
 [DNS spoof query](dns_flood.pcapng)
 
-### 1. TCP
+### 2. TCP
 🌞 **Mettre en place une attaque TCP RST**
 ```
 [attaquant@localhost toto]# python3 rst.py
